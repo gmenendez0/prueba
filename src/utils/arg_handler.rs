@@ -1,8 +1,9 @@
 use std::env;
 use std::io::BufRead;
 use std::path::Path;
-use crate::{file_handler, ARGS_EXPECTED};
+use crate::{file_handler};
 use crate::process::Process;
+use crate::consts::ARGS_EXPECTED;
 
 pub(crate) fn check_args() {
     let args: Vec<String> = env::args().collect();
@@ -83,8 +84,9 @@ pub(crate) fn get_other_processes(filepath: &Path) -> Vec<Process> {
             }
         };
         let leader = false;
+        let me = false;
 
-        other_processes.push(Process { id, ip, port, leader });
+        other_processes.push(Process { id, ip, port, leader, me });
     }
 
     other_processes
