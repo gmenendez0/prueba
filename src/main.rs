@@ -36,6 +36,7 @@ fn main() {
     let pid = get_process_id();
     let port = get_process_port();
     check_pid_and_port(pid, port, &other_processes);
+    let work_port; //TODO Recibir puerto de thread work por argumento
 
     println!("Iniciando proceso con ID: {} y PORT: {}", pid, port);
     other_processes = push_me(other_processes, pid, port);

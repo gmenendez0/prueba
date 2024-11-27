@@ -33,17 +33,5 @@ fn start_work(processes: Arc<RwLock<Vec<Process>>>) {
 
         mensaje -> listener(5050) -> soyLider? -> si -> intento procesarlo como un trip
         mensaje -> listener(5050) -> soyLider? -> no -> intento procesarlo como una actualizacion de estado
-
-        nodo_1 -> dirA LIDER
-        nodo_2 -> dirB Sub
-        nodo_3 -> dirC sub
     */
-
-    loop {
-        if am_i_leader(&processes) {
-            //TODO Realizo tarea como lider
-        } else {
-            //TODO Realizo tarea como subordinado
-        }
-    }
 }
