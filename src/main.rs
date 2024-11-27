@@ -70,6 +70,7 @@ fn main() {
     let other_processes1_read_ref = Arc::clone(&other_processes_mutex);
     let other_processes2_read_ref = Arc::clone(&other_processes_mutex);
 
+    //TODO Considerar si es necesario conocer que proceso es lider. Quizas no es necesario y se puede sacar el thread de process_handler para simplificar.
 // * Iniciamos los threads de liderazgo y subordinacion
     // ? iniciamos el thread que gestionara el estado de la lista de procesos. Puede recibir mensajes de:
     //   * listener thread: "new leader {pid}": indica que el proceso con pid es el nuevo lider
@@ -94,6 +95,8 @@ fn main() {
     //   * listener thread: "ELECTION": indica que se debe iniciar un proceso de eleccion
     //   * heartbeat thread: "ELECTION": indica que se debe iniciar un proceso de eleccion
     let election_thread_handler = election::start_election_thread(other_processes2_read_ref, rx_heartbeat_listener_thread, tx_process_handler1);
+
+// * Cierra los channels
 
 // * Espera de que los otros threads se cierren
     match listener_thread_handler.join(){

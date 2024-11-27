@@ -6,7 +6,6 @@ use crate::process::Process;
 use crate::utils::tcp::get_tcp_listener_or_kill_process;
 use crate::consts::{NEW_LIDER_MSG, HEARTBEAT_MSG, START_ELECTION_MSG, ELECTION_MSG, NEW_LEADER_ANSWER};
 
-
 fn get_me(processes: &Vec<Process>) -> Result<&Process, String> {
     for process in processes {
         if process.me {
@@ -35,7 +34,7 @@ pub(crate) fn listen_for_process_messages(port: u32, mut process_handler_tx: std
 
     thread::spawn(move || {
         // ? escucha las conexiones entrantes
-        println!("Escuchando conexiones en el puerto {}", port);
+        println!("Escuchando conexiones de otros nodos en el puerto {}", port);
         for stream in listener.incoming() {
             match stream {
                 Ok(stream) => {

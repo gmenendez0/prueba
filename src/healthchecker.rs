@@ -47,6 +47,8 @@ pub fn start_healthcheck_thread(mut rx: std::sync::mpsc::Receiver<String>, mut e
 }
 
 pub fn check_for_heartbeat(rx: &mut std::sync::mpsc::Receiver<String>, last_heartbeat_time: &mut Instant, timeout: Duration, election_tx: &mut std::sync::mpsc::Sender<String>) {
+    println!("Chequeando si recibi heartbeat...");
+
     // ? intento recibir un mensaje del canal.
     match rx.try_recv() {
         Ok(message) => {
@@ -74,12 +76,14 @@ pub fn check_for_heartbeat(rx: &mut std::sync::mpsc::Receiver<String>, last_hear
         }
         Err(_) => {
             eprintln!("Error desconocido al recibir mensaje del canal.");
-            exit(1);
+            exit(1); //TODO manejar error
         }
     }
 }
 
 pub fn send_heartbeat(other_processes: &Arc<RwLock<Vec<Process>>>) {
+    println!("Enviando heartbeat a los demas procesos...");
+
     let processes_guard = match other_processes.read() {
         Ok(guard) => guard,
         Err(e) => {
@@ -98,8 +102,8 @@ pub fn send_heartbeat(other_processes: &Arc<RwLock<Vec<Process>>>) {
             let mut conn = match get_server_connection(&addr) {
                 Ok(conn) => conn,
                 Err(e) => {
-                    eprintln!("{}", e);
-                    return; //TODO
+                    eprintln!("Error enviando heartbeat a {}: {}", process.id, e);
+                    continue;
                 }
             };
 

@@ -37,6 +37,7 @@ fn get_addr_for_process(process: &Process) -> String {
 }
 
 pub(crate) fn start_election(processes: &Arc<RwLock<Vec<Process>>>, tx: &mut std::sync::mpsc::Sender<String>) {
+    let mut i_am_leader = false;
     println!("Iniciando eleccion de lider...");
 
     let my_id = match get_my_id(processes) {
@@ -78,6 +79,7 @@ pub(crate) fn start_election(processes: &Arc<RwLock<Vec<Process>>>, tx: &mut std
                 return; //TODO
             }
 
+            // TODO Chequear que pasa si no puede escribir
             // 4. Envío el mensaje de ELECTION
             match conn.write(START_ELECTION_MSG.as_bytes()) {
                 Ok(_) => println!("Mensaje ELECTION enviado a {}", addr),
@@ -126,22 +128,42 @@ pub(crate) fn start_election(processes: &Arc<RwLock<Vec<Process>>>, tx: &mut std
 
         for process in processes_guard.iter() {
             if process.id != my_id {
+                println!("Enviando mensaje de nuevo lider a {}", process.id);
+
                 let addr = get_addr_for_process(process);
                 let mut conn = match get_server_connection(&addr) {
                     Ok(conn) => conn,
                     Err(e) => {
-                        eprintln!("{}", e);
-                        return; //TODO
+                        eprintln!("Error enviando mensaje de nuevo lider a {}: {}", process.id, e);
+                        continue;
                     }
                 };
 
                 match conn.write(msg.as_bytes()) {
                     Ok(_) => println!("Mensaje enviado a {}", addr),
-                    Err(e) => eprintln!("Error al enviar mensaje a {}: {}", addr, e)
+                    Err(e) => {
+                        eprintln!("Error al enviar mensaje a {}: {}", addr, e);
+                    }
                 }
             }
         }
 
-        todo!("iniciar tareas de lider")
+        i_am_leader = true;
+    }
+
+    // ? si soy el lider, inicio las tareas de lider y me quedo esperando a que se cierre ese thread. Es valido porque el modulo election no se volvera a usar en un lider, entonces si se bloquea da igual.
+    if i_am_leader {
+        println!("Proceso de eleccion de lider finalizado. Iniciando tareas de lider...");
+        let leader_main_handle = thread::spawn(move || {
+            //TODO Lanzar nuevo thread para tareas de lider
+            todo!("iniciar tareas de lider")
+        });
+
+        match leader_main_handle.join(){
+            Ok(_) => {},
+            Err(_) => {
+                eprintln!("Error: El hilo de lider terminó inesperadamente");
+            }
+        }
     }
 }
