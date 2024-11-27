@@ -96,6 +96,7 @@ pub(crate) fn process_message(message: &str, tx: &mut std::sync::mpsc::Sender<St
                 "error".to_string()
             }
         }
+        //TODO Se debe poner el server en modo subordinado
     } else if message == HEARTBEAT_MSG {
         match tx_heartbeat.send(HEARTBEAT_MSG.to_string()) {
             Ok(_) => {},
