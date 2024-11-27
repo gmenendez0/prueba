@@ -37,7 +37,6 @@ fn get_addr_for_process(process: &Process) -> String {
 }
 
 pub(crate) fn start_election(processes: &Arc<RwLock<Vec<Process>>>, tx: &mut std::sync::mpsc::Sender<String>) {
-    let mut i_am_leader = false;
     println!("Iniciando eleccion de lider...");
 
     let my_id = match get_my_id(processes) {
@@ -126,6 +125,7 @@ pub(crate) fn start_election(processes: &Arc<RwLock<Vec<Process>>>, tx: &mut std
             }
         };
 
+        //TODO Manejar el caso de que no se pueda enviar un aviso a un proceso. Definir timeouts
         for process in processes_guard.iter() {
             if process.id != my_id {
                 println!("Enviando mensaje de nuevo lider a {}", process.id);
@@ -145,24 +145,6 @@ pub(crate) fn start_election(processes: &Arc<RwLock<Vec<Process>>>, tx: &mut std
                         eprintln!("Error al enviar mensaje a {}: {}", addr, e);
                     }
                 }
-            }
-        }
-
-        i_am_leader = true;
-    }
-
-    // ? si soy el lider, inicio las tareas de lider y me quedo esperando a que se cierre ese thread. Es valido porque el modulo election no se volvera a usar en un lider, entonces si se bloquea da igual.
-    if i_am_leader {
-        println!("Proceso de eleccion de lider finalizado. Iniciando tareas de lider...");
-        let leader_main_handle = thread::spawn(move || {
-            //TODO Lanzar nuevo thread para tareas de lider
-            todo!("iniciar tareas de lider")
-        });
-
-        match leader_main_handle.join(){
-            Ok(_) => {},
-            Err(_) => {
-                eprintln!("Error: El hilo de lider terminó inesperadamente");
             }
         }
     }

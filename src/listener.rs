@@ -92,6 +92,7 @@ pub(crate) fn process_message(message: &str, tx: &mut std::sync::mpsc::Sender<St
     if message == START_ELECTION_MSG {
         ELECTION_MSG.to_string()
     } else if message.starts_with(NEW_LIDER_MSG) {
+        // ? avisa al process handler que setee el nuevo lider
         return match tx.send(message.to_string()) {
             Ok(_) => NEW_LEADER_ANSWER.to_string(),
             Err(e) => {
@@ -99,8 +100,6 @@ pub(crate) fn process_message(message: &str, tx: &mut std::sync::mpsc::Sender<St
                 "error".to_string()
             }
         }
-        //TODO Se debe poner el server en modo subordinado
-        //Tener un thread en loop que pregunte "soy lider?", si no lo soy actue como subordinado, si lo soy actue como lider.
     } else if message == HEARTBEAT_MSG {
         match tx_heartbeat.send(HEARTBEAT_MSG.to_string()) {
             Ok(_) => {},

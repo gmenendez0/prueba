@@ -92,6 +92,7 @@ pub fn send_heartbeat(other_processes: &Arc<RwLock<Vec<Process>>>) {
         }
     };
 
+    //TODO Manejar el caso de que no se pueda enviar un heartbeat a un proceso. Definir timeouts
     // ? para cada uno de los procesos que no son yo y no son lider (si llego aca siempre yo y el lider somos uno)
     for process in processes_guard.iter() {
         if !process.leader && !process.me {
