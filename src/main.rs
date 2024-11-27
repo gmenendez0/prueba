@@ -96,39 +96,25 @@ fn main() {
     //   * heartbeat thread: "ELECTION": indica que se debe iniciar un proceso de eleccion
     let election_thread_handler = election::start_election_thread(other_processes2_read_ref, rx_heartbeat_listener_thread, tx_process_handler1);
 
-// * Cierra los channels
-
 // * Espera de que los otros threads se cierren
     match listener_thread_handler.join(){
         Ok(_) => {},
-        Err(_) => {
-            eprintln!("Error: El hilo de manejo de mensajes terminó inesperadamente");
-            exit(1);
-        }
+        Err(_) => { eprintln!("Error: El hilo de manejo de mensajes terminó inesperadamente"); }
     }
 
     match process_list_handler.join(){
         Ok(_) => {},
-        Err(_) => {
-            eprintln!("Error: El hilo de manejo de la lista de procesos terminó inesperadamente");
-            exit(1);
-        }
+        Err(_) => { eprintln!("Error: El hilo de manejo de la lista de procesos terminó inesperadamente"); }
     }
 
     match heartbeat_thread_handler.join(){
         Ok(_) => {},
-        Err(_) => {
-            eprintln!("Error: El hilo de eleccion terminó inesperadamente");
-            exit(1);
-        }
+        Err(_) => { eprintln!("Error: El hilo de eleccion terminó inesperadamente"); }
     }
 
     match election_thread_handler.join(){
         Ok(_) => {},
-        Err(_) => {
-            eprintln!("Error: El hilo de eleccion terminó inesperadamente");
-            exit(1);
-        }
+        Err(_) => { eprintln!("Error: El hilo de eleccion terminó inesperadamente"); }
     }
 }
 

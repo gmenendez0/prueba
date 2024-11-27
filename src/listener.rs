@@ -34,7 +34,7 @@ pub(crate) fn listen_for_process_messages(port: u32, mut process_handler_tx: std
 
     thread::spawn(move || {
         // ? escucha las conexiones entrantes
-        println!("Escuchando conexiones de otros nodos en el puerto {}", port);
+        println!("[Listener]: Escuchando conexiones de otros nodos en el puerto {}", port);
         for stream in listener.incoming() {
             match stream {
                 Ok(stream) => {
@@ -42,7 +42,8 @@ pub(crate) fn listen_for_process_messages(port: u32, mut process_handler_tx: std
                     handle_node_message(stream, &mut process_handler_tx, &mut heartbeat_tx, &mut election_tx);
                 }
                 Err(e) => {
-                    eprintln!("Error al aceptar conexión: {}", e)
+                    eprintln!("[Listener]: Error al aceptar conexión: {}", e)
+                    // ? sigue funcionando el server pero podria romperse todo porque no sabemos que info venia en el mensaje perdido.
                 },
             }
         }
@@ -56,7 +57,7 @@ fn handle_node_message(mut stream: TcpStream, tx: &mut std::sync::mpsc::Sender<S
         Ok(bytes_read) => bytes_read,
         Err(e) => {
             eprintln!("Error al leer mensaje: {}", e);
-            return;
+            return; // ? sigue funcionando el server pero podria romperse todo porque no sabemos que info venia en el mensaje perdido.
         }
     };
     let message = String::from_utf8_lossy(&buffer[..bytes_read]);
@@ -67,7 +68,7 @@ fn handle_node_message(mut stream: TcpStream, tx: &mut std::sync::mpsc::Sender<S
     // ? envia la respuesta
     match stream.write(answer.as_bytes()) {
         Ok(_) => {},
-        Err(e) => eprintln!("Error al enviar respuesta: {}", e)
+        Err(e) => eprintln!("Error al enviar respuesta: {}", e) // ? sigue funcionando el server pero podria romperse todo porque no sabemos que pasa con el mensaje que no se pudo enviar.
     }
 
     // ? chequeo si la rta que devuelvo corresponde a que tengo que detonar una eleccion
@@ -75,7 +76,9 @@ fn handle_node_message(mut stream: TcpStream, tx: &mut std::sync::mpsc::Sender<S
         // ? envio mensaje de solicitud de inicio de eleccion
         match election_tx.send(START_ELECTION_MSG.to_string()) {
             Ok(_) => {},
-            Err(e) => eprintln!("Error al enviar mensaje de eleccion: {}", e)
+            Err(e) => {
+                eprintln!("Error al enviar mensaje de eleccion: {}", e) // ? podria romperse todo porque no sabemos que pasa con el mensaje que no se pudo enviar de election.
+            }
         }
     } else if answer == "error"{
         eprintln!("Error al procesar mensaje: {}", message);
@@ -97,6 +100,7 @@ pub(crate) fn process_message(message: &str, tx: &mut std::sync::mpsc::Sender<St
             }
         }
         //TODO Se debe poner el server en modo subordinado
+        //Tener un thread en loop que pregunte "soy lider?", si no lo soy actue como subordinado, si lo soy actue como lider.
     } else if message == HEARTBEAT_MSG {
         match tx_heartbeat.send(HEARTBEAT_MSG.to_string()) {
             Ok(_) => {},

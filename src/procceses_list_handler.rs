@@ -1,3 +1,4 @@
+use std::process::exit;
 use std::sync::{Arc, RwLock};
 use std::thread;
 use crate::process::Process;
@@ -7,13 +8,13 @@ fn print_processes(processes: &Arc<RwLock<Vec<Process>>>) {
     let processes_guard = match processes.read(){
         Ok(guard) => guard,
         Err(e) => {
-            eprintln!("Error al obtener el guard de procesos: {}", e);
+            eprintln!("[Process list handler]: Error al obtener el guard de procesos: {}", e);
             return;
         }
     };
 
     for process in processes_guard.iter() {
-        println!("ID: {}, IP: {}, PORT: {}", process.id, process.ip, process.port);
+        println!("[Process list handler]: Process ID: {}, IP: {}, PORT: {}", process.id, process.ip, process.port);
     }
 }
 
@@ -30,8 +31,8 @@ pub(crate) fn start_process_list_handling(processes: Arc<RwLock<Vec<Process>>>, 
                 let id = match new_leader_id.parse::<u32>() {
                     Ok(id) => id,
                     Err(e) => {
-                        eprintln!("Error al parsear ID de nuevo lider: {}", e);
-                        continue;
+                        eprintln!("[Process list handler]: Error al parsear ID de nuevo lider: {}", e);
+                        exit(1); // ? falla catastrofica
                     }
                 };
 
@@ -39,8 +40,8 @@ pub(crate) fn start_process_list_handling(processes: Arc<RwLock<Vec<Process>>>, 
                 let mut processes_guard = match processes.write() {
                     Ok(processes) => processes,
                     Err(e) => {
-                        eprintln!("Error al obtener el guard de procesos: {}", e);
-                        continue;
+                        eprintln!("[Process list handler]: Error al obtener el guard write de procesos: {}", e);
+                        exit(1); // ? falla catastrofica
                     }
                 };
 
